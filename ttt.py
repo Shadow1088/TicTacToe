@@ -16,12 +16,7 @@ scales = [(3,3),(5,5),(8,8)]
 current_scale = scales[0]
 how_many_needed_to_win = 3
 font = pg.font.SysFont('Arial', 50)
-
-if current_scale == (5,5):
-    how_many_needed_to_win = 4
-if current_scale == (8,8):
-    how_many_needed_to_win = 5
-
+index = 0 # for scales list
 
 
 #images
@@ -32,7 +27,6 @@ board = []
 def figureOutScale(scale):
     global x_img, o_img, board
     if scale == (3,3):
-        #board = [[0 for _ in range(3)] for _ in range(3)]
         
         board = [
                  [0,0,0],
@@ -180,32 +174,40 @@ def getUsersClick():
         row = x // 75
         col = y // 75
     return row, col
+
+def changeScale(scale):
+    global current_scale
+    current_scale = scale
+    figureOutScale(current_scale)
+    drawGrid(current_scale) 
+
 screen.fill("aquamarine3")
 figureOutScale(current_scale)
 drawGrid(current_scale)
+
 #loop
 while running:
     for event in pg.event.get():
         if event.type == pg.QUIT or (event.type == pg.KEYDOWN and event.key == pg.K_e):
             running = False
-        
+            sys.exit()
 
     #draw x and o
     if pg.mouse.get_pressed()[0]:
         row, col = getUsersClick()
         drawXO(row, col)
         
-
     #check for win
-        
     if checkWin(board):
         pg.draw.rect(screen, "aquamarine3", (0, 0, 600, 600))
-        
+
         textsurface = font.render(current_player + ' wins', True, (0, 0, 0))
         screen.blit(textsurface,(150,250))
+        
         pg.display.flip()
         pg.time.wait(2200)
         screen.fill("aquamarine3")
+        
         figureOutScale(current_scale)
         drawGrid(current_scale)
         player_points[current_player] += 1
@@ -217,14 +219,39 @@ while running:
        
         textsurface = font.render('Draw', True, (0, 0, 0))
         screen.blit(textsurface,(250,250))
+        
         pg.display.flip()
         pg.time.wait(2200)
         screen.fill("aquamarine3")
+        
         figureOutScale(current_scale)
         drawGrid(current_scale)
         current_player = players[1]
         draws += 1
-        
+
+    #buttons
+    pg.draw.rect(screen, "darkslategray4", (0, 610, 950, 100))
+    textsurface = font.render('[ + ] Change scale [ - ]', True, (0, 0, 0))
+    screen.blit(textsurface,(50,620))
+    if pg.mouse.get_pressed()[0]:
+        x, y = pg.mouse.get_pos()
+        if y > 610:
+            if 50 < x < 125:
+                pg.draw.rect(screen, "aquamarine3", (0, 0, 600, 600))
+                if index != 2:
+                    index += 1
+                changeScale(scales[index])
+            
+            if 475 < x < 545:
+                pg.draw.rect(screen, "aquamarine3", (0, 0, 600, 600))
+                if index != 0:
+                    index -= 1
+                changeScale(scales[index])
+                  
+    if current_scale == (5,5):
+        how_many_needed_to_win = 4
+    if current_scale == (8,8):
+        how_many_needed_to_win = 5  
 
     # side panel
     pg.draw.rect(screen, "darkslategray3", (650, 0, 350, 600))
@@ -234,8 +261,10 @@ while running:
         
     drawstext = font.render('Draws: ' + str(draws), True, (0, 0, 0))
     screen.blit(drawstext,(700,620))
+
     
-
-
+    
+    
+    ############################################################################################################
     pg.display.flip()
-    clock.tick(60)
+    clock.tick(12)
